@@ -1,68 +1,24 @@
 import { Hono } from "@hono/hono";
 import { HTTPException } from "@hono/hono/http-exception";
+import AnimalFactory from "./mock/factory.ts";
+
+const factoryAnimals = AnimalFactory.createMany(10);
+
 const app = new Hono().basePath("/api");
 
-interface SpeciesDetails {
-  genus: string;
-  species: string;
-  full_name: string;
-  habitats: Array<string>;
-}
-
-const MicrobialData: Record<string, SpeciesDetails | undefined> = {
-  "helicobacter_pylori": {
-    genus: "Helicobacter",
-    species: "pylori",
-    full_name: "Helicobacter pylori",
-    habitats: [
-      "aquatic",
-      "human gut",
-    ],
-  },
-  "escherichia_coli": {
-    genus: "Escherichia",
-    species: "coli",
-    full_name: "Escherichia coli",
-    habitats: [
-      "aquatic",
-      "human gut",
-    ],
-  },
-};
-
-app.get("/species/:name", (c) => {
-  const { name } = c.req.param();
-  const data = MicrobialData[name];
-  if (data !== undefined) {
-    return c.json(data);
-  } else {
-    throw new HTTPException(404, { message: "Species not found in database." });
-  }
-}).delete((c) => {
-  const { name } = c.req.param();
-  const data = MicrobialData[name];
-  if (data !== undefined) {
-    MicrobialData[name] = undefined;
-    return c.text(`Deleted ${name} in database`);
-  } else {
-    throw new HTTPException(404, { message: "Species not found in database." });
-  }
+app.get("/animals", (c) => {
+  return c.json(factoryAnimals);
 });
 
-app.get("/species/:name/habitats", async (c) => {
-  const { name } = c.req.param();
-  const data = MicrobialData[name];
-  if (data !== undefined) {
-    const res = await app.request(`/api/species/${name}`);
-    const data: SpeciesDetails | undefined = await res.json();
-    if (data) {
-      return c.json({ habitats: data.habitats });
-    } else {
-      throw new HTTPException(503, { message: "Server Error." });
-    }
-  } else {
-    throw new HTTPException(404, { message: "Species not found in database." });
+app.get("/animals/:id", (c) => {
+  const { id } = c.req.param();
+  const animalDetails = factoryAnimals.find((el) => el.id === id);
+  if (!animalDetails) {
+    throw new HTTPException(404, {
+      message: "ID not found.",
+    });
   }
+  return c.json(animalDetails);
 });
 
 if (import.meta.main) {
