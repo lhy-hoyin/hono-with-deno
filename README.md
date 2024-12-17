@@ -10,4 +10,11 @@ For Linux:
 curl -fsSL https://deno.land/install.sh | sh
 ```
 
+Also install:
+```shell
+touch deno.json
+deno add "jsr:@hono/hono"
+deno add 'jsr:@findhow/zod-factory' 'npm:zod'
+```
+
 * [Postman](https://www.postman.com/)
